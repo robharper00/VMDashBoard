@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSTSC Launcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        input {
+            padding: 10px;
+            width: 250px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #0078D7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #005A9E;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Remote Desktop Connection Launcher</h2>
+    <p>Enter the IP address or hostname of your VM:</p>
+    <input type="text" id="vm-ip" placeholder="Enter VM IP or hostname">
+    <button onclick="launchMSTSC()">Connect</button>
+
+    <script>
+        function launchMSTSC() {
+            let ip = document.getElementById("vm-ip").value.trim();
+            if (ip) {
+                window.location.href = `mstsc-launch://${ip}`;
+            } else {
+                alert("Please enter a valid IP address or hostname.");
+            }
+        }
+    </script>
+
+</body>
+</html>
