@@ -3,7 +3,7 @@ try {
     Write-Host "Starting Server Setup..."
 
     # Define paths
-    $scriptPath = "C:\Scripts1"
+    $scriptPath = "C:\NebularScripts"
     $sharePath = "D:\RDP_Button\V2"
     $htmlPath = "$sharePath\VMs.html"
     $taskName = "Update_VM_HTML"
@@ -75,8 +75,8 @@ try {
         @'
 $htmlPath = "D:\RDP_Button\V2\VMs.html" ########%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Update this path
 
-# Get live Hyper-V VM list
-$vms = Get-VM | Select-Object -ExpandProperty Name
+# Get live Hyper-V VM list with status and state
+$vms = Get-VM | Select-Object Name, State, Status
 
 $html = @"
 <!DOCTYPE html>
@@ -86,7 +86,7 @@ $html = @"
     <title>Remote Desktop Launcher</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
-        table { border-collapse: collapse; width: 60%; margin: auto; }
+        table { border-collapse: collapse; width: 70%; margin: auto; }
         th, td { border: 1px solid black; padding: 10px; }
         th { background-color: #f2f2f2; }
         button { padding: 8px 12px; background-color: #0078D7; color: white; border: none; border-radius: 5px; cursor: pointer; }
@@ -115,11 +115,11 @@ $html = @"
     <!-- VM List Section -->
     <h3>Available Virtual Machines</h3>
     <table>
-        <tr><th>VM Name</th><th>Connect</th></tr>
+        <tr><th>VM Name</th><th>Status</th><th>State</th><th>Connect</th></tr>
 "@
 
 foreach ($vm in $vms) {
-    $html += "<tr><td>$vm</td><td><button onclick=`"launchRDP('$vm')`">Connect</button></td></tr>"
+    $html += "<tr><td>$($vm.Name)</td><td>$($vm.Status)</td><td>$($vm.State)</td><td><button onclick=`"launchRDP('$($vm.Name)')`">Connect</button></td></tr>"
 }
 
 $html += "</table></body></html>"
@@ -204,8 +204,14 @@ username:s:$currentUser
 
 # Run GenerateHTML.ps1 Immediately to Create First HTML File ##################################################################
     try {
-        Write-Host "Generating the initial HTML file..." -ForegroundColor Green
-        Start-Process "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"$taskScriptPath`"" -Wait
+        Write-Host "Generating the initial HTML file... at '$htmlPath'" -ForegroundColor Green
+        . $taskScriptPath
+        #Start-Process "powershell.exe" -ArgumentList "-f -ExecutionPolicy Bypass -File `"$taskScriptPath`"" -Wait
+        if (Test-Path $htmlPath) {
+            Write-Host "VM HTML created" -ForegroundColor Green
+        } else {
+            Write-Host "VM HTML was not created" -ForegroundColor Red
+        }
     } catch {
         Write-Host "ERROR: Failed to generate initial HTML file." -ForegroundColor Red
     }
@@ -218,7 +224,7 @@ username:s:$currentUser
 
         Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -User "SYSTEM" -RunLevel Highest
 
-        Write-Host "Scheduled Task Created! HTML will update every 10 minutes." -ForegroundColor Green
+        Write-Host "Scheduled Task Created! HTML will update every 10 minutes. At ''" -ForegroundColor Green
     } catch {
         Write-Host "ERROR: Failed to create Scheduled Task." -ForegroundColor Red
     }
